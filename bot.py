@@ -702,7 +702,12 @@ async def main():
     await app.run_polling()
 
 if __name__ == "__main__":
+    import nest_asyncio
+    import asyncio
+
+    nest_asyncio.apply()
+    loop = asyncio.get_event_loop()
     try:
-        asyncio.run(main())
+        loop.run_until_complete(main())
     except (KeyboardInterrupt, SystemExit):
         pass
