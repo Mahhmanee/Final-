@@ -55,7 +55,7 @@ async def adb():
 
 async def init_db():
     print("🟩 Initializing database...")
-    async with await adb() as conn:
+    async with adb() as conn:
         await conn.execute("""
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY,
