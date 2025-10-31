@@ -669,11 +669,12 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     txt = await stats_text()
     await update.effective_message.reply_text(txt)
 
-# ========= MAIN =========
-# ======== MAIN ========
 # ======== MAIN ========
 async def main():
+    print("🚀 Initializing database...")
     await init_db()
+
+    print("🔧 Starting Telegram bot...")
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Пользователь
@@ -683,7 +684,7 @@ async def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & ~filters.COMMAND, pm_user_message))
     app.add_handler(CommandHandler("close", cmd_close_user, filters.ChatType.PRIVATE))
 
-    # Группа модерации — карточки тикетов
+    # Группа модерации
     app.add_handler(CallbackQueryHandler(cb_ticket_actions, pattern="^t:"))
     app.add_handler(MessageHandler(filters.Chat(MOD_GROUP_ID) & ~filters.COMMAND, mod_group_message))
     app.add_handler(CommandHandler("end", cmd_end, filters.Chat(MOD_GROUP_ID)))
@@ -704,14 +705,21 @@ async def main():
     await app.run_polling()
 
 
-# ======== ЗАПУСК ДЛЯ RAILWAY ========
+# ======== ЗАПУСК для Railway / Python 3.13 ========
 import asyncio
 import nest_asyncio
 
 nest_asyncio.apply()
 
-if __name__ == "__main__":
+def start():
+    loop = asyncio.new_event_loop()
+    asyncio.set_event_loop(loop)
     try:
-        asyncio.run(main())
+        loop.run_until_complete(main())
     except (KeyboardInterrupt, SystemExit):
         print("❌ Bot stopped manually.")
+    finally:
+        loop.close()
+
+if __name__ == "__main__":
+    start()
