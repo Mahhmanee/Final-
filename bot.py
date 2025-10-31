@@ -425,7 +425,7 @@ async def pm_user_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     # 3) Дополнительные сообщения пользователя — ищем последний open-тикет и пересылаем в группу
-    async with await adb() as conn:
+    async with adb() as conn:
         cur = await conn.execute(
             "SELECT ticket_id FROM tickets WHERE user_id=? AND status='open' ORDER BY id DESC LIMIT 1",
             (uid,))
@@ -562,7 +562,7 @@ async def cmd_close_user(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_chat.type != ChatType.PRIVATE:
         return
     uid = update.effective_user.id
-    async with await adb() as conn:
+    async with adb() as conn:
         cur = await conn.execute(
             "SELECT ticket_id FROM tickets WHERE user_id=? AND status='open' ORDER BY id DESC LIMIT 1", (uid,))
         row = await cur.fetchone()
