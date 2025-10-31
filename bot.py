@@ -670,49 +670,52 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(txt)
 
 # ========= MAIN =========
+# ======== MAIN ========
 async def main():
     await init_db()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Пользователь
     app.add_handler(CommandHandler("start", cmd_start, filters.ChatType.PRIVATE))
-    app.add_handler(CallbackQueryHandler(cb_lang, pattern=r"^lang:"))
-    app.add_handler(CallbackQueryHandler(cb_category, pattern=r"^cat:"))
+    app.add_handler(CallbackQueryHandler(cb_lang, pattern="^alang:"))
+    app.add_handler(CallbackQueryHandler(cb_category, pattern="^acat:"))
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & ~filters.COMMAND, pm_user_message))
     app.add_handler(CommandHandler("close", cmd_close_user, filters.ChatType.PRIVATE))
 
     # Группа модерации — карточки тикетов
-    app.add_handler(CallbackQueryHandler(cb_ticket_actions, pattern=r"^t:"))
+    app.add_handler(CallbackQueryHandler(cb_ticket_actions, pattern="^t:"))
     app.add_handler(MessageHandler(filters.Chat(MOD_GROUP_ID) & ~filters.COMMAND, mod_group_message))
     app.add_handler(CommandHandler("end", cmd_end, filters.Chat(MOD_GROUP_ID)))
 
     # Панель модерации
     app.add_handler(CommandHandler("panel", cmd_panel, filters.Chat(MOD_GROUP_ID)))
-    app.add_handler(CallbackQueryHandler(cb_panel, pattern=r"^p:"))
+    app.add_handler(CallbackQueryHandler(cb_panel, pattern="^p:"))
 
-    # Автоответчики (кнопки)
-    app.add_handler(CallbackQueryHandler(cb_autores, pattern=r"^ar:"))
+    # Автоответчики
+    app.add_handler(CallbackQueryHandler(cb_autores, pattern="^ar:"))
     app.add_handler(MessageHandler(filters.Chat(MOD_GROUP_ID) & filters.TEXT, mod_group_text))
 
-    # Резерв: история/статистика командами
+    # История / статистика
     app.add_handler(CommandHandler("history", cmd_history, filters.Chat(MOD_GROUP_ID)))
     app.add_handler(CommandHandler("stats", cmd_stats, filters.Chat(MOD_GROUP_ID)))
 
-    print("✅ Bot started.")
+    print("✅ Bot started and running...")
     await app.run_polling()
 
+
+# ======== ЗАПУСК (исправлено для Railway) ========
+import asyncio
+import nest_asyncio
+
+nest_asyncio.apply()
+
 if __name__ == "__main__":
-    import asyncio
-    import nest_asyncio
-
-    nest_asyncio.apply()
-
-    async def run():
+    async def run_bot():
         while True:
             try:
                 await main()
             except Exception as e:
-                print(f"[!] Ошибка: {e}. Перезапуск через 5 сек...")
+                print(f"[!] Ошибка: {e}. Перезапуск через 5 секунд...")
                 await asyncio.sleep(5)
 
-    asyncio.run(run())
+    asyncio.run(run_bot())
