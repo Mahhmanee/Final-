@@ -49,9 +49,8 @@ import aiosqlite
 
 DB_PATH = "support.db"  # можно оставить как есть или взять из os.getenv("DB_PATH")
 
-async def adb():
-    # безопасное подключение без повторного запуска потоков
-    return await aiosqlite.connect(DB_PATH, check_same_thread=False)
+def adb():
+    return aiosqlite.connect(DB_PATH, check_same_thread=False)
 
 async def init_db():
     print("🟩 Initializing database...")
