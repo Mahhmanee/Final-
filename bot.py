@@ -702,12 +702,17 @@ async def main():
     await app.run_polling()
 
 if __name__ == "__main__":
-    import nest_asyncio
     import asyncio
+    import nest_asyncio
 
     nest_asyncio.apply()
-    loop = asyncio.get_event_loop()
-    try:
-        loop.run_until_complete(main())
-    except (KeyboardInterrupt, SystemExit):
-        pass
+
+    async def run():
+        while True:
+            try:
+                await main()
+            except Exception as e:
+                print(f"[!] Ошибка: {e}. Перезапуск через 5 сек...")
+                await asyncio.sleep(5)
+
+    asyncio.run(run())
