@@ -671,6 +671,7 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 # ========= MAIN =========
 # ======== MAIN ========
+# ======== MAIN ========
 async def main():
     await init_db()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
@@ -699,23 +700,18 @@ async def main():
     app.add_handler(CommandHandler("history", cmd_history, filters.Chat(MOD_GROUP_ID)))
     app.add_handler(CommandHandler("stats", cmd_stats, filters.Chat(MOD_GROUP_ID)))
 
-    print("✅ Bot started and running...")
+    print("✅ Bot started successfully!")
     await app.run_polling()
 
 
-# ======== ЗАПУСК (исправлено для Railway) ========
+# ======== ЗАПУСК ДЛЯ RAILWAY ========
 import asyncio
 import nest_asyncio
 
 nest_asyncio.apply()
 
 if __name__ == "__main__":
-    async def run_bot():
-        while True:
-            try:
-                await main()
-            except Exception as e:
-                print(f"[!] Ошибка: {e}. Перезапуск через 5 секунд...")
-                await asyncio.sleep(5)
-
-    asyncio.run(run_bot())
+    try:
+        asyncio.run(main())
+    except (KeyboardInterrupt, SystemExit):
+        print("❌ Bot stopped manually.")
