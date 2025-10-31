@@ -15,8 +15,8 @@ from telegram.ext import (
 )
 
 # ========= НАСТРОЙКИ =========
-BOT_TOKEN = os.getenv("BOT_TOKEN", "PASTE_YOUR_TOKEN_HERE")
-MOD_GROUP_ID = int(os.getenv("MOD_GROUP_ID", "-1001234567890"))  # супергруппа модерации
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8351785031:AAEa4AgLciZGVO0cHm_Aa4SLqBINzbDDjao")
+MOD_GROUP_ID = int(os.getenv("MOD_GROUP_ID", "-1003173446264"))  # супергруппа модерации
 DB_PATH = os.getenv("DB_PATH", "support.db")
 
 LANGS = {"ru": "Русский", "en": "English"}
