@@ -670,11 +670,32 @@ async def cmd_stats(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.effective_message.reply_text(txt)
 
 # ======== MAIN ========
-async def main():
-    print("🚀 Initializing database...")
-    await init_db()
+import asyncio
+import aiosqlite
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters
 
-    print("🔧 Starting Telegram bot...")
+async def init_db_once():
+    """Безопасная инициализация БД — только один раз"""
+    global _db_initialized
+    if "_db_initialized" in globals():
+        return
+    _db_initialized = True
+    async with aiosqlite.connect("support.db") as db:
+        await db.execute("""
+            CREATE TABLE IF NOT EXISTS tickets (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                user_id INTEGER,
+                reason TEXT,
+                status TEXT,
+                created TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        """)
+        await db.commit()
+    print("✅ Database initialized.")
+
+
+async def main():
+    await init_db_once()
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
     # Пользователь
@@ -684,42 +705,28 @@ async def main():
     app.add_handler(MessageHandler(filters.ChatType.PRIVATE & ~filters.COMMAND, pm_user_message))
     app.add_handler(CommandHandler("close", cmd_close_user, filters.ChatType.PRIVATE))
 
-    # Группа модерации
+    # Модерация
     app.add_handler(CallbackQueryHandler(cb_ticket_actions, pattern="^t:"))
     app.add_handler(MessageHandler(filters.Chat(MOD_GROUP_ID) & ~filters.COMMAND, mod_group_message))
     app.add_handler(CommandHandler("end", cmd_end, filters.Chat(MOD_GROUP_ID)))
-
-    # Панель модерации
     app.add_handler(CommandHandler("panel", cmd_panel, filters.Chat(MOD_GROUP_ID)))
     app.add_handler(CallbackQueryHandler(cb_panel, pattern="^p:"))
-
-    # Автоответчики
     app.add_handler(CallbackQueryHandler(cb_autores, pattern="^ar:"))
     app.add_handler(MessageHandler(filters.Chat(MOD_GROUP_ID) & filters.TEXT, mod_group_text))
-
-    # История / статистика
     app.add_handler(CommandHandler("history", cmd_history, filters.Chat(MOD_GROUP_ID)))
     app.add_handler(CommandHandler("stats", cmd_stats, filters.Chat(MOD_GROUP_ID)))
 
-    print("✅ Bot started successfully!")
-    await app.run_polling()
+    print("🤖 Bot started and polling...")
+    await app.run_polling(close_loop=False)
 
 
-# ======== ЗАПУСК для Railway / Python 3.13 ========
-import asyncio
+# ======== ЗАПУСК ДЛЯ RAILWAY (PYTHON 3.13) ========
 import nest_asyncio
-
 nest_asyncio.apply()
 
-def start():
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
+if __name__ == "__main__":
     try:
+        loop = asyncio.get_event_loop()
         loop.run_until_complete(main())
     except (KeyboardInterrupt, SystemExit):
         print("❌ Bot stopped manually.")
-    finally:
-        loop.close()
-
-if __name__ == "__main__":
-    start()
