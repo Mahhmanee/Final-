@@ -43,7 +43,37 @@ CAT_TITLES_RU = {
     "coop": "🤝 Сотрудничество",
     "faq":  "❓ FAQ / Цены / Товары"
 }
+# ======== БАЗА ДАННЫХ ========
 
+import aiosqlite
+
+DB_PATH = "support.db"  # можно оставить как есть или взять из os.getenv("DB_PATH")
+
+async def adb():
+    # безопасное подключение без повторного запуска потоков
+    return await aiosqlite.connect(DB_PATH, check_same_thread=False)
+
+async def init_db():
+    print("🟩 Initializing database...")
+    async with await adb() as conn:
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY,
+            username TEXT,
+            lang TEXT
+        )
+        """)
+        await conn.execute("""
+        CREATE TABLE IF NOT EXISTS tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            category TEXT,
+            message TEXT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+        """)
+        await conn.commit()
+    print("✅ Database initialized.")
 # Активные «сессии ответа» модераторов: mod_id -> ticket_id
 active_reply: Dict[int, str] = {}
 
